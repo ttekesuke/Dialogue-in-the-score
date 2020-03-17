@@ -1,4 +1,9 @@
-<button (click)="scoreRendering()">scoreRendering</button>
-<button (click)="start()">start</button>
-<button (click)="stop()">stop</button>
+<form [formGroup]="form">
+    <p-dropdown [options]="meterCountList" formControlName="meterCount" (onChange)="setMeter()"></p-dropdown>/
+    <p-dropdown [options]="meterUnitList" formControlName="meterUnit" (onChange)="setMeter()"></p-dropdown>
+    ♩={{form.value.tempo}}
+    <p-slider formControlName="tempo" [min]="minTempo" [max]="maxTempo"></p-slider>
+</form>
+<p-button label="start" (click)="start()"></p-button>
+<p-button label="stop" (click)="stop()"></p-button>
 <div class="svg" [innerHTML]="score"></div>
