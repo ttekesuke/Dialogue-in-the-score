@@ -1,40 +1,39 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, OnDestroy } from "@angular/core";
 import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 import * as verovio from "verovio";
-import * as wad from "web-audio-daw";
 import { MeiXML } from "src/score/mei-xml";
 import { Note } from "src/score/note";
 import { MeterList } from "src/score/meter-list";
 import { Meter } from "src/score/meter";
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { Dropdown as IDropdown } from "src/interface/dropdown";
-import { ConstantValue } from "src/constants/constants";
+import { ConstantValue } from "src/constants/constant-value";
+import { AudioService } from "src/service/audio.service";
+import { Common } from "src/utility/common";
 
 @Component({
   selector: "app-root",
   templateUrl: "./app.component.html",
   styleUrls: ["./app.component.scss"]
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
   form: FormGroup;
   meterUnitList: IDropdown[] = MeterList.meterUnit;
   meterCountList: IDropdown[] = MeterList.meterCount;
   minTempo: number = ConstantValue.minTempo;
   maxTempo: number = ConstantValue.maxTempo;
-  
+
   score: SafeHtml;
   noteList: Note[][] = [[]];
   meterList: Meter[] = [];
-
-  voice: any = new wad({ source: "mic" });
-  tuner: any = new wad.Poly();
 
   vrvToolkit: any;
   repeatScoreRendering: any;
 
   constructor(
-    private sanitizer: DomSanitizer,
-    private _formBuilder: FormBuilder
+    private _sanitizer: DomSanitizer,
+    private _formBuilder: FormBuilder,
+    private _audio: AudioService
   ) {}
 
   ngOnInit() {
@@ -43,9 +42,8 @@ export class AppComponent implements OnInit {
       meterUnit: [ConstantValue.initMeterUnit],
       tempo: [ConstantValue.initTempo]
     });
+
     this.setMeter();
-    this.tuner.setVolume(0);
-    this.tuner.add(this.voice);
   }
 
   setMeter() {
@@ -61,14 +59,12 @@ export class AppComponent implements OnInit {
   start() {
     this.score = null;
     this.noteList = [[]];
-    this.voice.play();
-    this.tuner.updatePitch();
+
     this.vrvToolkit = new verovio.toolkit();
     let noteCounterInMeasure = 0;
     let measureCounter = 0;
 
     this.repeatScoreRendering = setInterval(() => {
-
       if (
         noteCounterInMeasure ==
         (this.meterList[measureCounter].meterCount *
@@ -79,14 +75,18 @@ export class AppComponent implements OnInit {
         this.noteList.push([]);
         if (measureCounter == ConstantValue.maxDisplayMeasure - 1) {
           this.noteList.shift();
-        }else {
+        } else {
           measureCounter += 1;
         }
       }
 
       let note: Note;
-      if (this.tuner.noteName) {
-        let noteInfo = this.tuner.noteName.split("");
+      let frequency = this._audio.getFrequency();
+
+      if (this.isAvailableFrequency(frequency)) {
+        let noteName =
+          ConstantValue.noteNames[Common.frequencyToNoteNumber(frequency)];
+        let noteInfo = noteName.split("");
         note = {
           pitchName: noteInfo.shift().toLowerCase(),
           octave: +noteInfo.pop(),
@@ -101,21 +101,30 @@ export class AppComponent implements OnInit {
       this.noteList[measureCounter].push(note);
       this.scoreRendering(this.noteList, this.meterList);
       noteCounterInMeasure += 1;
-    }, (60 * 1000) / +this.form.get("tempo").value / ConstantValue.minDuration * ConstantValue.baseDurationForTempo);
+    }, ((60 * 1000) / +this.form.get("tempo").value / ConstantValue.minDuration) * ConstantValue.baseDurationForTempo);
   }
 
+  isAvailableFrequency(frequency: number) {
+    return (
+      frequency > ConstantValue.minAvailableFrequency &&
+      frequency < ConstantValue.maxAvailableFrequency
+    );
+  }
   scoreRendering(noteList: Note[][], meterList: Meter[]) {
     const meiXmlParam = {
       noteList: noteList,
       meterList: meterList
     };
     var meiXml = new MeiXML(meiXmlParam);
-    var svg = this.vrvToolkit.renderData(meiXml.scoreXml, {});
-    this.score = this.sanitizer.bypassSecurityTrustHtml(svg);
+    var svg = this.vrvToolkit.renderData(meiXml.scoreXml, ConstantValue.scoreOptions);
+    this.score = this._sanitizer.bypassSecurityTrustHtml(svg);
   }
 
   stop() {
-    this.tuner.stopUpdatingPitch();
     clearInterval(this.repeatScoreRendering);
+  }
+
+  ngOnDestroy(){
+    this._audio.context.close()
   }
 }
