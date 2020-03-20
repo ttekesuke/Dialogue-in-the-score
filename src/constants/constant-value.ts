@@ -1,7 +1,7 @@
-import { Common } from 'src/utility/common';
+import { Common } from "src/utility/common";
 
 export class ConstantValue {
-  static readonly maxDisplayMeasure = 15;
+  static readonly initMaxMeasureLength = 10;
   static readonly minTempo = 30;
   static readonly maxTempo = 120;
   static readonly initMeterCount = 4;
@@ -113,12 +113,15 @@ export class ConstantValue {
     "C8"
   ];
   static readonly minAvailableFrequency = Common.noteNumberToFrequency(0);
-  static readonly maxAvailableFrequency = Common.noteNumberToFrequency(ConstantValue.noteNames.length - 1);
+  static readonly maxAvailableFrequency = Common.noteNumberToFrequency(
+    ConstantValue.noteNames.length - 1
+  );
   static readonly scoreOptions = {
-    pageWidth: 1200,
-    breaks: "auto",
+    breaks: "none",
     scale: 60,
     footer: "none",
-    adjustPageHeight: 1
-};
+    adjustPageHeight: 1,
+    pageMarginLeft: 0,
+    pageMarginRight:0
+  };
 }

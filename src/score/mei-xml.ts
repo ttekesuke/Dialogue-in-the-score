@@ -21,7 +21,7 @@ export class MeiXML {
 
       for(let i = 0; i < this.meterList[measureCounter].meterCount * ConstantValue.minDuration /
       this.meterList[measureCounter].meterUnit; i++){
-        this.spacingNoteListXml.push(`<note xml:id="rest-hidden-${i.toString()}" dur="16" oct="5" pname="c" stem.dir="up" />`);
+        this.spacingNoteListXml.push(`<note xml:id="rest-hidden-${i.toString()}" dur="16" oct="5" pname="c" stem.dir="up" accid="s" />`);
       }
       
       // create notes

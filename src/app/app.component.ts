@@ -29,6 +29,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   vrvToolkit: any;
   repeatScoreRendering: any;
+  widthOfScore:number;
 
   constructor(
     private _sanitizer: DomSanitizer,
@@ -51,7 +52,7 @@ export class AppComponent implements OnInit, OnDestroy {
       meterCount: this.form.get("meterCount").value,
       meterUnit: this.form.get("meterUnit").value
     };
-    this.meterList = new Array<Meter>(ConstantValue.maxDisplayMeasure).fill(
+    this.meterList = new Array<Meter>(ConstantValue.initMaxMeasureLength).fill(
       meter
     );
   }
@@ -65,6 +66,7 @@ export class AppComponent implements OnInit, OnDestroy {
     let measureCounter = 0;
 
     this.repeatScoreRendering = setInterval(() => {
+      this.scrollToRightEnd();
       if (
         noteCounterInMeasure ==
         (this.meterList[measureCounter].meterCount *
@@ -73,7 +75,7 @@ export class AppComponent implements OnInit, OnDestroy {
       ) {
         noteCounterInMeasure = 0;
         this.noteList.push([]);
-        if (measureCounter == ConstantValue.maxDisplayMeasure - 1) {
+        if (measureCounter == ConstantValue.initMaxMeasureLength - 1) {
           this.noteList.shift();
         } else {
           measureCounter += 1;
@@ -89,7 +91,7 @@ export class AppComponent implements OnInit, OnDestroy {
         let noteInfo = noteName.split("");
         note = {
           pitchName: noteInfo.shift().toLowerCase(),
-          octave: +noteInfo.pop(),
+          octave: +noteInfo.pop() - 1,
           isRest: false
         };
         if (noteInfo.length > 0) {
@@ -100,6 +102,7 @@ export class AppComponent implements OnInit, OnDestroy {
       }
       this.noteList[measureCounter].push(note);
       this.scoreRendering(this.noteList, this.meterList);
+
       noteCounterInMeasure += 1;
     }, ((60 * 1000) / +this.form.get("tempo").value / ConstantValue.minDuration) * ConstantValue.baseDurationForTempo);
   }
@@ -115,9 +118,23 @@ export class AppComponent implements OnInit, OnDestroy {
       noteList: noteList,
       meterList: meterList
     };
-    var meiXml = new MeiXML(meiXmlParam);
-    var svg = this.vrvToolkit.renderData(meiXml.scoreXml, ConstantValue.scoreOptions);
+
+    const scoreOptions = ConstantValue.scoreOptions;
+    const meiXml = new MeiXML(meiXmlParam);
+    const svg = this.vrvToolkit.renderData(meiXml.scoreXml, scoreOptions);
+    this.widthOfScore = this.getWidthOfScore(svg);
     this.score = this._sanitizer.bypassSecurityTrustHtml(svg);
+  }
+
+  getWidthOfScore(svgString: string){
+    var parser = new DOMParser();
+var doc = parser.parseFromString(svgString, "image/svg+xml");
+return doc.documentElement["width"].baseVal.value;
+  }
+
+  scrollToRightEnd(){
+    const scoreContainer = document.getElementById("score");
+    scoreContainer.scrollLeft = this.widthOfScore;
   }
 
   stop() {
