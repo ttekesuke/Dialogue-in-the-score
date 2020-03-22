@@ -9,9 +9,10 @@ export class ConstantValue {
   static readonly initTempo = 60;
   static readonly minDuration = 16; // means 16th-note
   static readonly baseDurationForTempo = 4; //means 4th-note
-  static readonly standardPitch = 442;
+  static readonly standardA4Pitch = 442;
   static readonly standardA4NoteNumber = 69;
   static readonly numberOfEqualTemperament = 12;
+  static readonly boundaryOctaveNumberOfStemDirection = 5;
   static readonly noteNames = [
     // Just an array of note names. This can be useful for mapping MIDI data to notes.
     "C0",
