@@ -109,8 +109,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
   isAvailableFrequency(frequency: number) {
     return (
-      frequency > ConstantValue.minAvailableFrequency &&
-      frequency < ConstantValue.maxAvailableFrequency
+      frequency > Common.noteNumberToFrequency(ConstantValue.minAvailableNote)   &&
+      frequency < Common.noteNumberToFrequency(ConstantValue.maxAvailableNote)
     );
   }
   scoreRendering(noteList: Note[][], meterList: Meter[]) {

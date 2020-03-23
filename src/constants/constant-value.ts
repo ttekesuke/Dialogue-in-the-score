@@ -1,6 +1,10 @@
 import { Common } from "src/utility/common";
 
 export class ConstantValue {
+constructor(private _commonService: Common){
+
+}
+
   static readonly initMaxMeasureLength = 10;
   static readonly minTempo = 30;
   static readonly maxTempo = 120;
@@ -113,10 +117,8 @@ export class ConstantValue {
     "B7",
     "C8"
   ];
-  static readonly minAvailableFrequency = Common.noteNumberToFrequency(0);
-  static readonly maxAvailableFrequency = Common.noteNumberToFrequency(
-    ConstantValue.noteNames.length - 1
-  );
+  static readonly minAvailableNote = 22;
+  static readonly maxAvailableNote = 96
   static readonly scoreOptions = {
     breaks: "none",
     scale: 60,

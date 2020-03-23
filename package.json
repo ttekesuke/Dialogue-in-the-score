@@ -1,6 +1,8 @@
 {
   "browser": {
-    "fs": false
+    "fs": false,
+    "crypto": false,
+    "path": false
   },
   "name": "dialogue-in-the-score",
   "version": "0.0.0",
