@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
-  "version": 1, 
+  "version": 1,
   "newProjectRoot": "projects",
   "projects": {
     "dialogue-in-the-score": {
@@ -124,8 +124,17 @@
               "devServerTarget": "dialogue-in-the-score:serve:production"
             }
           }
+        },
+        "deploy": {
+          "builder": "@netlify-builder/deploy:deploy",
+          "options": {
+            "outputPath": "dist/dialogue-in-the-score",
+            "netlifyToken": "c70afc1b082d920cfed2683a46b6739789dec238cbe7d2ad7d89ce47958a4e38",
+            "siteId": "91c4b5ef-b65f-4b2e-9870-fd93fc71fcc3"
+          }
         }
       }
-    }},
+    }
+  },
   "defaultProject": "dialogue-in-the-score"
 }
