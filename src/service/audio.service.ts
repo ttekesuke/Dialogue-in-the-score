@@ -19,7 +19,6 @@ export class AudioService {
         this.input = this.context.createMediaStreamSource(stream);
         this.analyser = this.context.createAnalyser();
         this.input.connect(this.analyser);
-        this.analyser.connect(this.context.destination);
         this.loaded = true;
       });
   }
