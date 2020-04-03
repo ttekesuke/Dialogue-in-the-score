@@ -2,9 +2,12 @@
   <form [formGroup]="form">
     <div class="ui-fluid">
       <div class="ui-g">
+        [WIP] Please turn down the sound output volume 
+      </div>
+      <div class="ui-g">
         <div class="ui-g-12 ui-md-3">
           <div class="ui-g-2">
-            Meter:
+             Meter:
           </div>
           <div class="ui-g-5">
             <p-dropdown
@@ -42,8 +45,13 @@
         </div>
       </div>
 
-
-      <div id="score" [innerHTML]="score"></div>
+      <div id="score">
+        <span
+          *ngFor="let measure of scoreViewData; trackBy: trackByFunc"
+          [innerHTML]="measure.svg"
+        >
+        </span>
+      </div>
     </div>
   </form>
 </div>

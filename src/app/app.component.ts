@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from "@angular/core";
 import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 import * as verovio from "verovio";
-import { MeiXML } from "src/score/mei-xml";
+import { MeiService } from "src/service/mei.service";
 import { Note } from "src/score/note";
 import { MeterList } from "src/score/meter-list";
 import { Meter } from "src/score/meter";
@@ -10,6 +10,7 @@ import { Dropdown as IDropdown } from "src/interface/dropdown";
 import { ConstantValue } from "src/constants/constant-value";
 import { AudioService } from "src/service/audio.service";
 import { Common } from "src/utility/common";
+import { ScoreView } from 'src/score/score-view';
 
 @Component({
   selector: "app-root",
@@ -23,18 +24,21 @@ export class AppComponent implements OnInit, OnDestroy {
   minTempo: number = ConstantValue.minTempo;
   maxTempo: number = ConstantValue.maxTempo;
 
-  score: SafeHtml;
-  noteList: Note[][] = [[]];
+  scoreViewData: ScoreView[];
+  noteList: Note[] = [];
+  noteElementList: Element[] = [];
   meterList: Meter[] = [];
-
+  numberOfMinDurationsInMeasure: number;
+  noteCounterInMeasure: number = 0;
   vrvToolkit: any;
   repeatScoreRendering: any;
-  widthOfScore:number;
+  widthOfScore: number;
 
   constructor(
     private _sanitizer: DomSanitizer,
     private _formBuilder: FormBuilder,
-    private _audio: AudioService
+    private _audio: AudioService,
+    private _mei: MeiService
   ) {}
 
   ngOnInit() {
@@ -58,29 +62,16 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   start() {
-    this.score = null;
-    this.noteList = [[]];
+    this.scoreViewData = [];
+    this.noteList = [];
+    this.noteElementList = [];
 
     this.vrvToolkit = new verovio.toolkit();
-    let noteCounterInMeasure = 0;
+
     let measureCounter = 0;
 
     this.repeatScoreRendering = setInterval(() => {
       this.scrollToRightEnd();
-      if (
-        noteCounterInMeasure ==
-        (this.meterList[measureCounter].meterCount *
-          ConstantValue.minDuration) /
-          this.meterList[measureCounter].meterUnit
-      ) {
-        noteCounterInMeasure = 0;
-        this.noteList.push([]);
-        if (measureCounter == ConstantValue.initMaxMeasureLength - 1) {
-          this.noteList.shift();
-        } else {
-          measureCounter += 1;
-        }
-      }
 
       let note: Note;
       let frequency = this._audio.getFrequency();
@@ -90,7 +81,7 @@ export class AppComponent implements OnInit, OnDestroy {
           ConstantValue.noteNames[Common.frequencyToNoteNumber(frequency)];
         let noteInfo = noteName.split("");
         note = {
-          pitchName: noteInfo.shift().toLowerCase(),
+          pitchName: noteInfo.shift(),
           octave: +noteInfo.pop() - 1,
           isRest: false
         };
@@ -100,39 +91,88 @@ export class AppComponent implements OnInit, OnDestroy {
       } else {
         note = { isRest: true };
       }
-      this.noteList[measureCounter].push(note);
-      this.scoreRendering(this.noteList, this.meterList);
 
-      noteCounterInMeasure += 1;
+      let meter = this.meterList[measureCounter];
+      this.numberOfMinDurationsInMeasure =
+        (meter.meterCount * ConstantValue.minDuration) / meter.meterUnit;
+
+      this.noteList.push(note);
+      this.scoreRendering(this.noteList, meter, measureCounter);
+
+      
+      // when reach to the end of current measure
+      if (this.noteCounterInMeasure == this.numberOfMinDurationsInMeasure - 1) {
+        this.noteCounterInMeasure = 0;
+        this.noteList = [];
+        this.noteElementList = [];
+        
+        // when reach to the maximum of the displaying measure length
+        if (measureCounter == ConstantValue.initMaxMeasureLength - 1) {
+          this.scoreViewData.shift();
+        } else{
+          measureCounter += 1;
+        }
+      }else{
+        this.noteCounterInMeasure += 1;
+      }
+            
     }, ((60 * 1000) / +this.form.get("tempo").value / ConstantValue.minDuration) * ConstantValue.baseDurationForTempo);
   }
 
   isAvailableFrequency(frequency: number) {
     return (
-      frequency > Common.noteNumberToFrequency(ConstantValue.minAvailableNote)   &&
+      frequency >
+        Common.noteNumberToFrequency(ConstantValue.minAvailableNote) &&
       frequency < Common.noteNumberToFrequency(ConstantValue.maxAvailableNote)
     );
   }
-  scoreRendering(noteList: Note[][], meterList: Meter[]) {
-    const meiXmlParam = {
-      noteList: noteList,
-      meterList: meterList
-    };
 
+  scoreRendering(noteList: Note[], meter: Meter, measureCounter: number) {
+    this._mei.createScoreOnInit(this.numberOfMinDurationsInMeasure);
+    const baseScore = this._mei.createBaseScore(meter);
+    const spacingNotes = this._mei.createSpacingNotes();
+    this.noteElementList = this._mei.createNotes(
+      noteList,
+      this.noteElementList
+    );
+    const measure = this._mei.createMeasure(
+      measureCounter,
+      this.noteElementList,
+      spacingNotes
+    );
+    const sectionNode = baseScore.getElementsByTagName("section");
+
+    sectionNode[0].appendChild(measure);
+
+    const serializer = new XMLSerializer();
+    const scoreXmlString = serializer.serializeToString(baseScore);
     const scoreOptions = ConstantValue.scoreOptions;
-    const meiXml = new MeiXML(meiXmlParam);
-    const svg = this.vrvToolkit.renderData(meiXml.scoreXml, scoreOptions);
-    this.widthOfScore = this.getWidthOfScore(svg);
-    this.score = this._sanitizer.bypassSecurityTrustHtml(svg);
+    const svg = this.vrvToolkit.renderData(scoreXmlString, scoreOptions);
+    this.widthOfScore = this.getWidthOfScore(svg) * (measureCounter + 1) + 1000;
+    this.scoreViewData[measureCounter] = {
+      svg: this._sanitizer.bypassSecurityTrustHtml(svg),
+      measureNumber: measureCounter
+    }
+    
+    
+    if (this.numberOfMinDurationsInMeasure - 1 == this.noteCounterInMeasure) {
+      
+      this.scoreViewData.push();
+    }
   }
 
-  getWidthOfScore(svgString: string){
-    var parser = new DOMParser();
-var doc = parser.parseFromString(svgString, "image/svg+xml");
-return doc.documentElement["width"].baseVal.value;
+  trackByFunc(index: number, value: ScoreView){
+    return value ? value.measureNumber: null;
+
   }
 
-  scrollToRightEnd(){
+  getWidthOfScore(svgString: string) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(svgString, "image/svg+xml");
+    return doc.documentElement["width"].baseVal.value;
+  }
+
+  scrollToRightEnd() {
     const scoreContainer = document.getElementById("score");
     scoreContainer.scrollLeft = this.widthOfScore;
   }
@@ -141,7 +181,7 @@ return doc.documentElement["width"].baseVal.value;
     clearInterval(this.repeatScoreRendering);
   }
 
-  ngOnDestroy(){
-    this._audio.context.close()
+  ngOnDestroy() {
+    this._audio.context.close();
   }
 }

@@ -1,34 +1,29 @@
 import { Injectable } from "@angular/core";
-import { Note } from "./note";
+import { Note } from "src/score/note";
 import { ConstantValue } from "src/constants/constant-value";
-import { Meter } from "./meter";
+import { Meter } from "src/score/meter";
 @Injectable({
-  providedIn: "root"
+  providedIn: 'root'
 })
 export class MeiService {
-  meter: Meter;
-  noteList: Note[] = [];
-  measureListXml: HTMLElement[] = [];
-  noteListXml: HTMLElement[] = [];
-  spacingNoteListXml: HTMLElement[] = [];
-  scoreBaseXml: Document;
-  parser: any = new DOMParser();
-  doc: Document = document.implementation.createDocument("", "", null);
   numberOfMinDurationsInMeasure: number;
   constructor() {}
 
-  createScoreOnInit(meter: Meter) {
-    this.numberOfMinDurationsInMeasure =
-      (meter.meterCount * ConstantValue.minDuration) / meter.meterUnit;
-    return this.createBaseScore(meter);
+  createScoreOnInit(numberOfMinDurationsInMeasure: number) {
+    this.numberOfMinDurationsInMeasure =numberOfMinDurationsInMeasure
+
+   
+    // const sectionNode = this.scoreBaseXml.getElementsByTagName("section");
+
+    //   sectionNode[0].appendChild(measureXml);
   }
 
-  createBaseScore(meter: Meter): Document {
+  createBaseScore(meter: Meter): Element {
     let scoreBaseXml = document.implementation.createDocument("", "", null);
 
     const meiNode = document.createElementNS(null, "mei");
     meiNode.setAttribute("meiversion", "3.0.0");
-    scoreBaseXml.appendChild(meiNode);
+     scoreBaseXml.appendChild(meiNode);
 
     const meiHeadNode = document.createElementNS(null, "meiHead");
     meiNode.appendChild(meiHeadNode);
@@ -46,10 +41,8 @@ export class MeiService {
     mdivNode.appendChild(scoreNode);
 
     const scoreDefNode = document.createElementNS(null, "scoreDef");
-    // scoreDefNode.setAttribute("meter.unit", meter.meterUnit.toString());
-    // scoreDefNode.setAttribute("meter.count", meter.meterCount.toString());
-    // scoreDefNode.setAttribute("meter.form", "invis");
-    // scoreDefNode.setAttribute("clef.form", "invis");
+    scoreDefNode.setAttribute("meter.unit", meter.meterUnit.toString());
+    scoreDefNode.setAttribute("meter.count", meter.meterCount.toString());
     scoreNode.appendChild(scoreDefNode);
 
     const staffGrpNode = document.createElementNS(null, "staffGrp");
@@ -58,20 +51,18 @@ export class MeiService {
     scoreDefNode.appendChild(staffGrpNode);
 
     const staffDefNode = document.createElementNS(null, "staffDef");
-    // staffDefNode.setAttribute("clef.shape", "");
-    // staffDefNode.setAttribute("clef.line", "2");
+    staffDefNode.setAttribute("clef.shape", "G");
+    staffDefNode.setAttribute("clef.line", "2");
     staffDefNode.setAttribute("n", "1");
     staffDefNode.setAttribute("lines", "5");
-    staffDefNode.setAttribute("meter.form", "invis");
-    staffDefNode.setAttribute("clef.form", "invis");
     staffGrpNode.appendChild(staffDefNode);
 
     const sectionNode = document.createElementNS(null, "section");
     scoreNode.appendChild(sectionNode);
-    return scoreBaseXml;
+    return meiNode;
   }
 
-  createSpacingNotes(): HTMLElement[] {
+  createSpacingNotes(): Element[] {
     let spacingNoteListXml = [];
     for (let i = 0; i < this.numberOfMinDurationsInMeasure; i++) {
       let spacingNoteElement: Element = document.createElementNS(null, "note");
@@ -178,11 +169,11 @@ export class MeiService {
 
   createMeasure(
     measureNumber: number,
-    noteListXml: HTMLElement[],
-    spacingNoteElement: HTMLElement[]
+    noteListXml: Element[],
+    spacingNoteElement: Element[]
   ): Element {
     const measureNode = document.createElementNS(null, "measure");
-    measureNode.setAttribute("n", measureNumber.toString());
+    measureNode.setAttribute("n", (measureNumber + 1).toString());
 
     const staffNode = document.createElementNS(null, "staff");
     measureNode.appendChild(staffNode);
