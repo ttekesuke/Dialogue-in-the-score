@@ -79,19 +79,29 @@ export class MeiService {
     return spacingNoteListXml;
   }
 
-  createNotes(noteList: Note[], noteElementList: Element[]): Element[] {
-    let noteListLength = noteList.length;
-    let beforeNote: Note =
-      noteListLength > 1 ? noteList[noteListLength - 2] : null;
 
-    let currentNote = noteList[noteListLength - 1];
+  createNotes(beforeNoteElement: Element, currentNote: Note, noteCounterInMeasure: number): latestNoteElement {
+ 
+    let beforeNote: Note;
+    
+    if(beforeNoteElement && noteCounterInMeasure !== 0){
+      beforeNote = {
+        isRest: beforeNoteElement.tagName === "rest" ? true: false,
+        pitchName: beforeNoteElement.getAttributeNS(null, "pname"),
+        accidental: beforeNoteElement.getAttributeNS(null, "accid"),
+        octave: +beforeNoteElement.getAttributeNS(null, "oct"),
+      }
+    }
+
     let noteElement: Element = this.createBaseNote(currentNote);
-    let resultNoteElementList = noteElementList;
+    let resultNoteElementList: latestNoteElement = new latestNoteElement();
+    resultNoteElementList.before = beforeNoteElement;
+
 
     //create rest-note
     if (currentNote.isRest) {
       noteElement = this.setAttributes(noteElement, ConstantValue.minDuration);
-
+      resultNoteElementList.current = noteElement;
 
       //create note
     } else {
@@ -107,33 +117,39 @@ export class MeiService {
           noteElement,
           ConstantValue.minDuration
         );
+        resultNoteElementList.current = noteElement;
+        
   
       } else {
+        // require to change the beforeNote's length
         
-        let beforeNoteElement = resultNoteElementList[resultNoteElementList.length - 1];
-        resultNoteElementList.pop()
-
         switch (beforeNoteElement.getAttribute("dur")) {
           case "16":
             noteElement = this.setAttributes(noteElement, 8);
+            resultNoteElementList.before = noteElement;
             break;
           case "8":
             if (!beforeNoteElement.getAttribute("dots")) {
               noteElement = this.setAttributes(noteElement, 8, 1);
+              resultNoteElementList.before = noteElement;
             } else {
               noteElement = this.setAttributes(noteElement, 4);
+              resultNoteElementList.before = noteElement;
             }
             break;
           case "4":
-            resultNoteElementList.push(beforeNoteElement);
             noteElement = this.setAttributes(
               noteElement,
               ConstantValue.minDuration
             );
+            resultNoteElementList.current = noteElement;
         }
+        
+
+
       }
     }
-    resultNoteElementList.push(noteElement)
+
     return resultNoteElementList;
   }
 
@@ -169,7 +185,6 @@ export class MeiService {
 
   createMeasure(
     measureNumber: number,
-    noteListXml: Element[],
     spacingNoteElement: Element[]
   ): Element {
     const measureNode = document.createElementNS(null, "measure");
@@ -180,18 +195,22 @@ export class MeiService {
 
     const layerMainNode = document.createElementNS(null, "layer");
     layerMainNode.setAttribute("xml:id", "layer-main");
-    for (let note of noteListXml) {
-      layerMainNode.appendChild(note);
-    }
     staffNode.appendChild(layerMainNode);
 
     const layerSpacingNode = document.createElementNS(null, "layer");
     layerSpacingNode.setAttribute("xml:id", "layer-spacing");
-    for (let spacringNote of spacingNoteElement) {
-      layerSpacingNode.appendChild(spacringNote);
+    for (let spacingNote of spacingNoteElement) {
+      layerSpacingNode.appendChild(spacingNote);
     }
     staffNode.appendChild(layerSpacingNode);
 
     return measureNode;
   }
+
+
+  
+}
+export class latestNoteElement {
+  before: Element;
+  current: Element;
 }

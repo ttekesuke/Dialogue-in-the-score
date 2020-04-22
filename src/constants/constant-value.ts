@@ -126,9 +126,18 @@ constructor(private _commonService: Common){
     adjustPageHeight: 1,
     pageMarginLeft: 0,
     pageMarginRight:0,
+    leftMarginMensur: 0,
+    rightMarginMensur: 0,
+    leftMarginBarLine: 0,
+    rightMarginBarLine: 0,
+    leftMarginLeftBarLine: 0,
+    leftMarginRightBarLine: 0,
+    rightMarginLeftBarLine: 0,
+    rightMarginRightBarLine: 0,
     leftMarginClef: 0,
     leftMarginMeterSig: 0,
     rightMarginClef: 0,
-    rightMarginMeterSig: 0
+    rightMarginMeterSig: 0,
+    
   };
 }
