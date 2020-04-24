@@ -19,7 +19,7 @@ export class MeiService {
   }
 
   createBaseScore(meter: Meter): Element {
-    let scoreBaseXml = document.implementation.createDocument("", "", null);
+    const scoreBaseXml = document.implementation.createDocument("", "", null);
 
     const meiNode = document.createElementNS(null, "mei");
     meiNode.setAttribute("meiversion", "3.0.0");
@@ -63,9 +63,9 @@ export class MeiService {
   }
 
   createSpacingNotes(): Element[] {
-    let spacingNoteListXml = [];
+    const spacingNoteListXml = [];
     for (let i = 0; i < this.numberOfMinDurationsInMeasure; i++) {
-      let spacingNoteElement: Element = document.createElementNS(null, "note");
+      const spacingNoteElement: Element = document.createElementNS(null, "note");
       spacingNoteElement.setAttribute(
         "dur",
         ConstantValue.minDuration.toString()
@@ -80,7 +80,7 @@ export class MeiService {
   }
 
 
-  createNotes(beforeNoteElement: Element, currentNote: Note, noteCounterInMeasure: number): latestNoteElement {
+  createLatestNotes(beforeNoteElement: Element, currentNote: Note, noteCounterInMeasure: number): latestNoteElement {
  
     let beforeNote: Note;
     
@@ -94,7 +94,7 @@ export class MeiService {
     }
 
     let noteElement: Element = this.createBaseNote(currentNote);
-    let resultNoteElementList: latestNoteElement = new latestNoteElement();
+    const resultNoteElementList: latestNoteElement = new latestNoteElement();
     resultNoteElementList.before = beforeNoteElement;
 
 
@@ -160,7 +160,7 @@ export class MeiService {
       note = document.createElementNS(null, "rest");
     } else {
       note = document.createElementNS(null, "note");
-      let stemDir =
+      const stemDir =
         currentNote.octave >= ConstantValue.boundaryOctaveNumberOfStemDirection
           ? "down"
           : "up";
@@ -199,7 +199,7 @@ export class MeiService {
 
     const layerSpacingNode = document.createElementNS(null, "layer");
     layerSpacingNode.setAttribute("xml:id", "layer-spacing");
-    for (let spacingNote of spacingNoteElement) {
+    for (const spacingNote of spacingNoteElement) {
       layerSpacingNode.appendChild(spacingNote);
     }
     staffNode.appendChild(layerSpacingNode);

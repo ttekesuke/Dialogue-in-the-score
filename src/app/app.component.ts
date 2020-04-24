@@ -10,7 +10,7 @@ import { Dropdown as IDropdown } from "src/interface/dropdown";
 import { ConstantValue } from "src/constants/constant-value";
 import { AudioService } from "src/service/audio.service";
 import { Common } from "src/utility/common";
-import { ScoreView } from "src/score/score-view";
+
 
 @Component({
   selector: "app-root",
@@ -35,6 +35,8 @@ export class AppComponent implements OnInit, OnDestroy {
   baseScore: Element;
   spacingNotes: Element[];
   latestNoteElement: latestNoteElement;
+  generatingScore:boolean = false;
+
   constructor(
     private _sanitizer: DomSanitizer,
     private _formBuilder: FormBuilder,
@@ -61,25 +63,37 @@ export class AppComponent implements OnInit, OnDestroy {
       meter
     );
   }
+  normalizeTempo(){
+    const tempo = this.form.get("tempo");
+    if(tempo.value < ConstantValue.minTempo ){
+      tempo.setValue(ConstantValue.minTempo);
+    } else if(tempo.value > ConstantValue.maxTempo){
+      tempo.setValue(ConstantValue.maxTempo);
+    }
+  }
 
   start() {
+    //init
+    this.generatingScore = true;
     this.measureElementList = [];
     this.latestNoteElement = null;
-    this.vrvToolkit = new verovio.toolkit();
     this.scoreViewData = null;
     let measureCounter = 0;
     this.noteCounterInMeasure = 0;
+    let beforeNoteElement: Element;
+    this.vrvToolkit = new verovio.toolkit();
     let meter = this.meterList[measureCounter];
     this.numberOfMinDurationsInMeasure =
       (meter.meterCount * ConstantValue.minDuration) / meter.meterUnit;
+
     this._mei.createScoreOnInit(this.numberOfMinDurationsInMeasure);
     this.baseScore = this._mei.createBaseScore(meter);
-    let beforeNoteElement: Element;
 
+    // run at 16-note intervals
     this.repeatScoreRendering = setInterval(() => {
-      this.scrollToRightEnd();
 
-      let currentNote: Note = this.detectPitch();
+      this.scrollToRightEnd();
+      const currentNote: Note = this.detectPitch();
 
       // measure init
       if (this.noteCounterInMeasure == 0) {
@@ -96,19 +110,12 @@ export class AppComponent implements OnInit, OnDestroy {
         this.measureElementList.push(measureElement);
       }
 
-      this.latestNoteElement = this._mei.createNotes(
+      // Get elements with a rhythm assigned to it
+      this.latestNoteElement = this._mei.createLatestNotes(
         beforeNoteElement,
         currentNote,
         this.noteCounterInMeasure
       );
-
-      if(this.noteCounterInMeasure !== this.numberOfMinDurationsInMeasure - 1){
-        beforeNoteElement = this.latestNoteElement.current ? this.latestNoteElement.current : this.latestNoteElement.before;
-      } else {
-        beforeNoteElement = null;
-      }
-
-
       
       const layerNode = this.measureElementList[
         this.measureElementList.length - 1
@@ -117,27 +124,28 @@ export class AppComponent implements OnInit, OnDestroy {
       if(layerNode.hasChildNodes()){
         layerNode.removeChild(layerNode.lastChild);
       }
+
+      // Attatching elements to layer-node
       if(this.latestNoteElement.before){
         layerNode.appendChild(this.latestNoteElement.before)
-
       }
- 
-      if (this.latestNoteElement.current) {
+       if (this.latestNoteElement.current) {
         layerNode.appendChild(this.latestNoteElement.current);
       }
 
-      const sectionNode = this.baseScore.getElementsByTagName("section");
-      while (sectionNode[0].firstChild) {
-        sectionNode[0].removeChild(sectionNode[0].firstChild);
+      const sectionNode = this.baseScore.getElementsByTagName("section")[0];
+      while (sectionNode.firstChild) {
+        sectionNode.removeChild(sectionNode.firstChild);
       }
       for (let measure of this.measureElementList) {
-        sectionNode[0].appendChild(measure);
+        sectionNode.appendChild(measure);
       }
 
-      this.scoreRendering(meter, measureCounter);
+      this.scoreRendering();
       // when reach to the end of current measure
       if (this.noteCounterInMeasure == this.numberOfMinDurationsInMeasure - 1) {
         this.noteCounterInMeasure = 0;
+        beforeNoteElement = null;
 
         // when reach to the maximum of the displaying measure length
         if (measureCounter == ConstantValue.initMaxMeasureLength - 1) {
@@ -147,18 +155,19 @@ export class AppComponent implements OnInit, OnDestroy {
         }
       } else {
         this.noteCounterInMeasure += 1;
+        beforeNoteElement = this.latestNoteElement.current ? this.latestNoteElement.current : this.latestNoteElement.before;
       }
     }, ((60 * 1000) / +this.form.get("tempo").value / ConstantValue.minDuration) * ConstantValue.baseDurationForTempo);
   }
 
   detectPitch(): Note {
-    let frequency = this._audio.getFrequency();
+    const frequency = this._audio.getFrequency();
     let note: Note;
 
     if (this.isAvailableFrequency(frequency)) {
-      let noteName =
+      const noteName =
         ConstantValue.noteNames[Common.frequencyToNoteNumber(frequency)];
-      let noteInfo = noteName.split("");
+      const noteInfo = noteName.split("");
       note = {
         pitchName: noteInfo.shift(),
         octave: +noteInfo.pop() - 1,
@@ -181,17 +190,13 @@ export class AppComponent implements OnInit, OnDestroy {
     );
   }
 
-  scoreRendering(meter: Meter, measureCounter: number) {
+  scoreRendering() {
     const serializer = new XMLSerializer();
     const scoreXmlString = serializer.serializeToString(this.baseScore);
     const scoreOptions = ConstantValue.scoreOptions;
     const svg = this.vrvToolkit.renderData(scoreXmlString, scoreOptions);
     this.widthOfScore = this.getWidthOfScore(svg);
     this.scoreViewData = this._sanitizer.bypassSecurityTrustHtml(svg);
-  }
-
-  trackByFunc(index: number, value: ScoreView) {
-    return value ? value.measureNumber : null;
   }
 
   getWidthOfScore(svgString: string) {
@@ -206,6 +211,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   stop() {
+    this.generatingScore = false;
     clearInterval(this.repeatScoreRendering);
   }
 

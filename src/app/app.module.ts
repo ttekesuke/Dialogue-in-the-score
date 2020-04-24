@@ -3,8 +3,9 @@ import { NgModule } from "@angular/core";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { DropdownModule } from "primeng/dropdown";
-import { SliderModule } from "primeng/slider";
+import {InputTextModule} from 'primeng/inputtext';
 import { ButtonModule } from "primeng/button";
+import {KeyFilterModule} from 'primeng/keyfilter';
 import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent } from "./app.component";
 
@@ -16,9 +17,10 @@ import { AppComponent } from "./app.component";
     FormsModule,
     ReactiveFormsModule,
     DropdownModule,
-    SliderModule,
+    InputTextModule,
     ButtonModule,
-    BrowserAnimationsModule
+    BrowserAnimationsModule,
+    KeyFilterModule
   ],
   providers: [],
   bootstrap: [AppComponent]
