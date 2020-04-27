@@ -8,9 +8,10 @@ import { ButtonModule } from "primeng/button";
 import {KeyFilterModule} from 'primeng/keyfilter';
 import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent } from "./app.component";
+import { SvgXmlComponent } from './svg-xml/svg-xml.component';
 
 @NgModule({
-  declarations: [AppComponent],
+  declarations: [AppComponent, SvgXmlComponent],
   imports: [
     BrowserModule,
     AppRoutingModule,

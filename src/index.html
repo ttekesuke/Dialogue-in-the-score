@@ -1,13 +1,35 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>DialogueInTheScore</title>
-  <base href="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
-</head>
-<body>
-  <app-root></app-root>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <title>DialogueInTheScore</title>
+    <base href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <style type="text/css">
+      .app-loading {
+        position: relative;
+        height: calc(100vh - 30px);
+      }
+      .app-loading .box {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        -webkit-transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%);
+        width: 100px;
+        text-align: center
+      }
+    </style>
+  </head>
+  <body>
+    <app-root>
+      <div class="app-loading">
+        <div class="box">
+          <img src="/assets/images/loading.gif" />
+          <p>Loading...</p>
+        </div>
+      </div>
+    </app-root>
+  </body>
 </html>
