@@ -20,7 +20,7 @@ import { Common } from "src/utility/common";
 export class AppComponent implements OnInit, OnDestroy {
   form: FormGroup;
   meterUnitList: IDropdown[] = MeterList.meterUnit;
-  meterCountList: IDropdown[] = MeterList.meterCount;
+  meterCountList: IDropdown[];
   minTempo: number = ConstantValue.minTempo;
   maxTempo: number = ConstantValue.maxTempo;
 
@@ -46,14 +46,25 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.form = this._formBuilder.group({
-      meterCount: [ConstantValue.initMeterCount],
+      meterCount: [],
       meterUnit: [ConstantValue.initMeterUnit],
       tempo: [ConstantValue.initTempo],
     });
 
+    this.meterCountList = MeterList.meterList[ConstantValue.initMeterUnit];
+    this.form.get(["meterCount"]).setValue(ConstantValue.initMeterCount);
+
     this.setMeter();
   }
 
+  onChangeMeterCount(){
+    this.setMeter();
+  }
+
+  onChangeMeterUnit(){
+    this.meterCountList = MeterList.meterList[this.form.get("meterUnit").value];
+    this.setMeter();
+  }
   setMeter() {
     const meter: Meter = {
       meterCount: this.form.get("meterCount").value,

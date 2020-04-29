@@ -13,14 +13,14 @@
           [style]="{ minWidth: '1px', width: '60px' }"
           [options]="meterCountList"
           formControlName="meterCount"
-          (onChange)="setMeter()"
+          (onChange)="onChangeMeterCount()"
         ></p-dropdown>
         /
         <p-dropdown
           [style]="{ minWidth: '1px', width: '60px' }"
           [options]="meterUnitList"
           formControlName="meterUnit"
-          (onChange)="setMeter()"
+          (onChange)="onChangeMeterUnit()"
         ></p-dropdown>
       </div>
       <div class="p-col-3 p-col-align-center">

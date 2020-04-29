@@ -1,17 +1,23 @@
+//base
 import { BrowserModule } from "@angular/platform-browser";
 import { NgModule } from "@angular/core";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
+import { AppRoutingModule } from "./app-routing.module";
+//cdk
+import { ScrollingModule } from '@angular/cdk/scrolling';
+
+// primeng
 import { DropdownModule } from "primeng/dropdown";
 import {InputTextModule} from 'primeng/inputtext';
 import { ButtonModule } from "primeng/button";
 import {KeyFilterModule} from 'primeng/keyfilter';
-import { AppRoutingModule } from "./app-routing.module";
+
+//component
 import { AppComponent } from "./app.component";
-import { SvgXmlComponent } from './svg-xml/svg-xml.component';
 
 @NgModule({
-  declarations: [AppComponent, SvgXmlComponent],
+  declarations: [AppComponent],
   imports: [
     BrowserModule,
     AppRoutingModule,
@@ -21,7 +27,8 @@ import { SvgXmlComponent } from './svg-xml/svg-xml.component';
     InputTextModule,
     ButtonModule,
     BrowserAnimationsModule,
-    KeyFilterModule
+    KeyFilterModule,
+    ScrollingModule 
   ],
   providers: [],
   bootstrap: [AppComponent]
