@@ -12,6 +12,7 @@ import { DropdownModule } from "primeng/dropdown";
 import {InputTextModule} from 'primeng/inputtext';
 import { ButtonModule } from "primeng/button";
 import {KeyFilterModule} from 'primeng/keyfilter';
+import {FieldsetModule} from 'primeng/fieldset';
 
 //component
 import { AppComponent } from "./app.component";
@@ -28,7 +29,8 @@ import { AppComponent } from "./app.component";
     ButtonModule,
     BrowserAnimationsModule,
     KeyFilterModule,
-    ScrollingModule 
+    ScrollingModule,
+    FieldsetModule
   ],
   providers: [],
   bootstrap: [AppComponent]

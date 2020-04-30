@@ -10,6 +10,11 @@ import { Dropdown as IDropdown } from "src/interface/dropdown";
 import { ConstantValue } from "src/constants/constant-value";
 import { AudioService } from "src/service/audio.service";
 import { Common } from "src/utility/common";
+import { ClefList } from 'src/score/clef-list';
+import { KeyList } from 'src/score/key-list';
+
+
+
 
 
 @Component({
@@ -23,6 +28,9 @@ export class AppComponent implements OnInit, OnDestroy {
   meterCountList: IDropdown[];
   minTempo: number = ConstantValue.minTempo;
   maxTempo: number = ConstantValue.maxTempo;
+  clefList: IDropdown[] = ClefList.clefList;
+  keyList: IDropdown[] = KeyList.keyList;
+  keyModeList: IDropdown[] = KeyList.keyModeList;
 
   scoreViewData: SafeHtml;
   measureElementList: Element[] = [];
@@ -49,6 +57,9 @@ export class AppComponent implements OnInit, OnDestroy {
       meterCount: [],
       meterUnit: [ConstantValue.initMeterUnit],
       tempo: [ConstantValue.initTempo],
+      clef: [ConstantValue.initClef],
+      key: [ConstantValue.initKey],
+      keyMode: [ConstantValue.initKeyMode]
     });
 
     this.meterCountList = MeterList.meterList[ConstantValue.initMeterUnit];
@@ -65,6 +76,19 @@ export class AppComponent implements OnInit, OnDestroy {
     this.meterCountList = MeterList.meterList[this.form.get("meterUnit").value];
     this.setMeter();
   }
+
+  onChangeClef(){
+
+  }
+
+  onChangeKey(){
+
+  }
+
+  onChangeKeyMode(){
+
+  }
+
   setMeter() {
     const meter: Meter = {
       meterCount: this.form.get("meterCount").value,

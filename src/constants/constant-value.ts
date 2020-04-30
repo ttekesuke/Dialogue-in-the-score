@@ -11,6 +11,9 @@ constructor(private _commonService: Common){
   static readonly initMeterCount = 4;
   static readonly initMeterUnit = 4;
   static readonly initTempo = 60;
+  static readonly initClef = "G";
+  static readonly initKey = "C";
+  static readonly initKeyMode = "major";
   static readonly minDuration = 16; // means 16th-note
   static readonly baseDurationForTempo = 4; //means 4th-note
   static readonly standardA4Pitch = 442;

@@ -1,38 +1,83 @@
 <div class="container">
+  <h1>Dialogue in the score[WIP]</h1>
+  <p>This is an application that analyzes the sound picked up by a microphone and displays it as a monophonic score.</p>
+  <ol>
+    <li type="1">Permission to use a microphone is required.</li>
+    <li type="1">Set the information for the score.</li>
+    <li type="1">Click Start. Sing or play an instrument into the microphone.</li>
+  </ol>
+
   <form [formGroup]="form">
     <div class="p-grid">
-      <div class="p-col">
-        [WIP] 1. Permission to use a microphone is required. 2. Click Start
-        button. 3. Sing into the microphone.
+      <div class="p-col p-col-align-center">
+
+        <p-fieldset legend="Tempo">
+          ♩= <input
+            type="number"
+            pInputText
+            pKeyFilter="int"
+            formControlName="tempo"
+            (blur)="normalizeTempo()"
+            [min]="minTempo"
+            [max]="maxTempo"
+          />
+        </p-fieldset>
+
+        <p-fieldset legend="Meter" class="dropdown-field">
+          <p-dropdown
+            [style]="{ minWidth: '1px', width: '60px' }"
+            [options]="meterCountList"
+            formControlName="meterCount"
+            (onChange)="onChangeMeterCount()"
+          ></p-dropdown>
+          /
+          <p-dropdown
+            [style]="{ minWidth: '1px', width: '60px' }"
+            [options]="meterUnitList"
+            formControlName="meterUnit"
+            (onChange)="onChangeMeterUnit()"
+          ></p-dropdown>
+        </p-fieldset>
+
+        <p-fieldset legend="Clef" class="dropdown-field">
+          <p-dropdown
+            [style]="{ minWidth: '1px', width: '150px' }"
+            [options]="clefList"
+            formControlName="clef"
+            (onChange)="onChangeClef()"
+          ></p-dropdown>
+        </p-fieldset>
+
+        <p-fieldset legend="Key" class="dropdown-field">
+          <p-dropdown
+            [style]="{ minWidth: '1px', width: '60px' }"
+            [options]="keyList"
+            formControlName="key"
+            (onChange)="onChangeKey()"
+          ></p-dropdown>
+          /
+          <p-dropdown
+          [style]="{ minWidth: '1px', width: '90px' }"
+          [options]="keyModeList"
+          formControlName="keyMode"
+          (onChange)="onChangeKeyMode()"
+          ></p-dropdown>
+        </p-fieldset>        
+
+        <p-fieldset legend="Displaying Score">
+          <p-button
+            label="start"
+            (click)="start()"
+            [disabled]="generatingScore"
+          ></p-button>
+          <p-button
+            label="stop"
+            (click)="stop()"
+            [disabled]="!generatingScore"
+          ></p-button>
+        </p-fieldset>
       </div>
     </div>
-    <div class="p-grid">
-      <div class="p-col-3 p-col-align-center">
-        Meter:
-        <p-dropdown
-          [style]="{ minWidth: '1px', width: '60px' }"
-          [options]="meterCountList"
-          formControlName="meterCount"
-          (onChange)="onChangeMeterCount()"
-        ></p-dropdown>
-        /
-        <p-dropdown
-          [style]="{ minWidth: '1px', width: '60px' }"
-          [options]="meterUnitList"
-          formControlName="meterUnit"
-          (onChange)="onChangeMeterUnit()"
-        ></p-dropdown>
-      </div>
-      <div class="p-col-3 p-col-align-center">
-        Tempo:♩=<input type="number" pInputText pKeyFilter="int" formControlName="tempo" (blur)="normalizeTempo()" [min]="minTempo" [max]="maxTempo" />
-      </div>
-      <div class="p-col-3 p-col-align-center">
-        <p-button label="start" (click)="start()" [disabled]="generatingScore"></p-button>
-        <p-button label="stop" (click)="stop()" [disabled]="!generatingScore"></p-button>
-      </div>
-    </div>
-    <div class="p-grid">
-      <div id="score" [innerHTML]="scoreViewData"></div>
-    </div>
+    <div id="score" [innerHTML]="scoreViewData"></div>
   </form>
 </div>

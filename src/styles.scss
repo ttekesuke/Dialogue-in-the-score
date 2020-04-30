@@ -1,22 +1,32 @@
 /* >>> is alias for /deep/ which will force style down through the child component tree. */
 /* match all ids that start with rest and hide them*/
 #layer-spacing {
-    display: none;
- }
- 
- >>> g.note {
-   /*fill: #000;*/
-   -webkit-transition: fill 0.3s; /* Safari */
-   transition: fill 0.3s;
- }
- 
- >>> g.note:hover {
-   fill: #ff9800;
-   cursor: pointer;
- }
+  display: none;
+}
 
- #score{
-  white-space:nowrap;
-  overflow:auto;
- }
- 
+>>> g.note {
+  /*fill: #000;*/
+  -webkit-transition: fill 0.3s; /* Safari */
+  transition: fill 0.3s;
+}
+
+>>> g.note:hover {
+  fill: #ff9800;
+  cursor: pointer;
+}
+
+#score {
+  white-space: nowrap;
+  overflow: auto;
+  border: 1px solid #c8c8c8;
+  padding: 0.571em 1em;
+  border-radius: 3px;
+  height: 186.84px;
+}
+.ui-fieldset {
+  display: inline-block;
+}
+.dropdown-field {
+  position: relative;
+  top: -2px;
+}
