@@ -17,7 +17,7 @@
             pInputText
             pKeyFilter="int"
             formControlName="tempo"
-            (blur)="normalizeTempo()"
+            (blur)="onBlurTempo()"
             [min]="minTempo"
             [max]="maxTempo"
           />
@@ -39,12 +39,21 @@
           ></p-dropdown>
         </p-fieldset>
 
-        <p-fieldset legend="Clef" class="dropdown-field">
+        <p-fieldset legend="Clef Shape" class="dropdown-field">
           <p-dropdown
-            [style]="{ minWidth: '1px', width: '150px' }"
-            [options]="clefList"
-            formControlName="clef"
-            (onChange)="onChangeClef()"
+            [style]="{ minWidth: '1px', width: '60px' }"
+            [options]="clefShapeList"
+            formControlName="clefShape"
+            (onChange)="onChangeClefShape()"
+          ></p-dropdown>
+        </p-fieldset>
+
+        <p-fieldset legend="Clef Line" class="dropdown-field">
+          <p-dropdown
+            [style]="{ minWidth: '1px', width: '60px' }"
+            [options]="clefLineList"
+            formControlName="clefLine"
+            (onChange)="onChangeClefLine()"
           ></p-dropdown>
         </p-fieldset>
 
@@ -55,7 +64,7 @@
             formControlName="key"
             (onChange)="onChangeKey()"
           ></p-dropdown>
-          /
+          -
           <p-dropdown
           [style]="{ minWidth: '1px', width: '90px' }"
           [options]="keyModeList"
@@ -64,16 +73,29 @@
           ></p-dropdown>
         </p-fieldset>        
 
-        <p-fieldset legend="Displaying Score">
+        <p-fieldset legend="Generating Score">
           <p-button
             label="start"
-            (click)="start()"
+            (click)="startGeneratingScore()"
             [disabled]="generatingScore"
           ></p-button>
           <p-button
             label="stop"
-            (click)="stop()"
+            (click)="stopGeneratingScore()"
             [disabled]="!generatingScore"
+          ></p-button>
+        </p-fieldset>
+
+        <p-fieldset legend="Playback">
+          <p-button
+            label="start"
+            (click)="startPlayback()"
+            [disabled]="generatingScore || !scoreViewData"
+          ></p-button>
+          <p-button
+            label="stop"
+            (click)="stopPlayback()"
+            [disabled]="generatingScore || !scoreViewData"
           ></p-button>
         </p-fieldset>
       </div>

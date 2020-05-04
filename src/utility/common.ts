@@ -10,4 +10,9 @@ export class Common {
   static noteNumberToFrequency(noteNumber) {
     return ConstantValue.standardA4Pitch * Math.pow(2, (noteNumber - ConstantValue.standardA4NoteNumber) / ConstantValue.numberOfEqualTemperament);
   }
+
+  static getRecordInAssociativeArray(array: any[], keyName: string, keyValue: any){
+    return array.filter(object=> object[keyName] == keyValue).shift();
+
+  }
 }

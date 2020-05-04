@@ -7,15 +7,13 @@ import { Meter } from "src/score/meter";
 })
 export class MeiService {
   numberOfMinDurationsInMeasure: number;
+  clefShape: string = ConstantValue.initClefShape;
+  clefLine: string = ConstantValue.initClefLine.toString(); 
+  clef: string;
   constructor() {}
 
   createScoreOnInit(numberOfMinDurationsInMeasure: number) {
     this.numberOfMinDurationsInMeasure =numberOfMinDurationsInMeasure
-
-   
-    // const sectionNode = this.scoreBaseXml.getElementsByTagName("section");
-
-    //   sectionNode[0].appendChild(measureXml);
   }
 
   createBaseScore(meter: Meter): Element {
@@ -51,8 +49,8 @@ export class MeiService {
     scoreDefNode.appendChild(staffGrpNode);
 
     const staffDefNode = document.createElementNS(null, "staffDef");
-    staffDefNode.setAttribute("clef.shape", "G");
-    staffDefNode.setAttribute("clef.line", "2");
+    staffDefNode.setAttribute("clef.shape", this.clefShape);
+    staffDefNode.setAttribute("clef.line", this.clefLine);
     staffDefNode.setAttribute("n", "1");
     staffDefNode.setAttribute("lines", "5");
     staffGrpNode.appendChild(staffDefNode);
@@ -202,7 +200,8 @@ export class MeiService {
     for (const spacingNote of spacingNoteElement) {
       layerSpacingNode.appendChild(spacingNote);
     }
-    staffNode.appendChild(layerSpacingNode);
+    // TODO
+    // staffNode.appendChild(layerSpacingNode);
 
     return measureNode;
   }

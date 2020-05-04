@@ -5,8 +5,8 @@ import { MeiService, latestNoteElement } from "src/service/mei.service";
 import { Note } from "src/score/note";
 import { MeterList } from "src/score/meter-list";
 import { Meter } from "src/score/meter";
-import { FormBuilder, FormGroup } from "@angular/forms";
-import { Dropdown as IDropdown } from "src/interface/dropdown";
+import { FormBuilder, FormGroup, FormControl, AbstractControl } from "@angular/forms";
+import { Dropdown } from "src/interface/dropdown";
 import { ConstantValue } from "src/constants/constant-value";
 import { AudioService } from "src/service/audio.service";
 import { Common } from "src/utility/common";
@@ -24,13 +24,15 @@ import { KeyList } from 'src/score/key-list';
 })
 export class AppComponent implements OnInit, OnDestroy {
   form: FormGroup;
-  meterUnitList: IDropdown[] = MeterList.meterUnit;
-  meterCountList: IDropdown[];
+  meterUnitList: Dropdown[] = MeterList.meterList;
+  meterCountList: Dropdown[];
+  tempo: number = 0;
   minTempo: number = ConstantValue.minTempo;
   maxTempo: number = ConstantValue.maxTempo;
-  clefList: IDropdown[] = ClefList.clefList;
-  keyList: IDropdown[] = KeyList.keyList;
-  keyModeList: IDropdown[] = KeyList.keyModeList;
+  clefShapeList: Dropdown[] = ClefList.clefList;
+  clefLineList: Dropdown[];
+  keyList: Dropdown[] = KeyList.keyList;
+  keyModeList: Dropdown[] = KeyList.keyModeList;
 
   scoreViewData: SafeHtml;
   measureElementList: Element[] = [];
@@ -57,15 +59,25 @@ export class AppComponent implements OnInit, OnDestroy {
       meterCount: [],
       meterUnit: [ConstantValue.initMeterUnit],
       tempo: [ConstantValue.initTempo],
-      clef: [ConstantValue.initClef],
+      clefShape: [ConstantValue.initClefShape],
+      clefLine: [],
       key: [ConstantValue.initKey],
       keyMode: [ConstantValue.initKeyMode]
     });
 
-    this.meterCountList = MeterList.meterList[ConstantValue.initMeterUnit];
+    this.meterCountList = Common.getRecordInAssociativeArray(MeterList.meterList, "value", ConstantValue.initMeterUnit).count;
     this.form.get(["meterCount"]).setValue(ConstantValue.initMeterCount);
+    this.clefLineList = Common.getRecordInAssociativeArray(ClefList.clefList, "value", ConstantValue.initClefShape).line;
+    this.form.get(["clefLine"]).setValue(ConstantValue.initClefLine);
 
     this.setMeter();
+    this.tempo = ConstantValue.initTempo;
+  }
+
+  onBlurTempo(){
+    const tempo = this.form.get("tempo");
+    this.normalizeTempo(tempo);
+    this.tempo = +tempo.value;
   }
 
   onChangeMeterCount(){
@@ -73,13 +85,24 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   onChangeMeterUnit(){
-    this.meterCountList = MeterList.meterList[this.form.get("meterUnit").value];
+    const countInfo = Common.getRecordInAssociativeArray(MeterList.meterList, "value", this.form.get("meterUnit").value);
+    this.meterCountList = countInfo.count;
+    this.form.get(["meterCount"]).setValue(countInfo.count[0].value);
     this.setMeter();
   }
 
-  onChangeClef(){
-
+  onChangeClefShape(){
+    this._mei.clefShape = this.form.get("clefShape").value;
+    const clefInfo = Common.getRecordInAssociativeArray(ClefList.clefList, "value", this.form.get("clefShape").value);
+    this.clefLineList = clefInfo.line;
+    this.form.get(["clefLine"]).setValue(clefInfo.line[0].value);
+    this._mei.clefLine = this.form.get("clefLine").value;
   }
+
+  onChangeClefLine(){
+    this._mei.clefLine = this.form.get("clefLine").value;
+  }
+  
 
   onChangeKey(){
 
@@ -89,6 +112,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   }
 
+
   setMeter() {
     const meter: Meter = {
       meterCount: this.form.get("meterCount").value,
@@ -97,9 +121,16 @@ export class AppComponent implements OnInit, OnDestroy {
     this.meterList = new Array<Meter>(ConstantValue.initMaxMeasureLength).fill(
       meter
     );
+
+    this.numberOfMinDurationsInMeasure =
+      (meter.meterCount * ConstantValue.minDuration) / 
+      meter.meterUnit;
   }
-  normalizeTempo(){
-    const tempo = this.form.get("tempo");
+
+  
+
+  normalizeTempo(tempo: AbstractControl){
+    
     if(tempo.value < ConstantValue.minTempo ){
       tempo.setValue(ConstantValue.minTempo);
     } else if(tempo.value > ConstantValue.maxTempo){
@@ -107,7 +138,27 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
-  start() {
+  disableFormControls(){
+    this.form.controls["tempo"].disable()
+    this.form.controls["meterCount"].disable()
+    this.form.controls["meterUnit"].disable()
+    this.form.controls["clefShape"].disable()
+    this.form.controls["clefLine"].disable()
+    this.form.controls["key"].disable()
+    this.form.controls["keyMode"].disable()
+  }
+
+  enableFormControls(){
+    this.form.controls["tempo"].enable()
+    this.form.controls["meterCount"].enable();
+    this.form.controls["meterUnit"].enable();
+    this.form.controls["clefShape"].enable();
+    this.form.controls["clefLine"].enable();
+    this.form.controls["key"].enable();
+    this.form.controls["keyMode"].enable();
+  }
+
+  startGeneratingScore() {
     //init
     this.generatingScore = true;
     this.measureElementList = [];
@@ -117,11 +168,10 @@ export class AppComponent implements OnInit, OnDestroy {
     this.noteCounterInMeasure = 0;
     let beforeNoteElement: Element;
     this.vrvToolkit = new verovio.toolkit();
-    let meter = this.meterList[measureCounter];
-    this.numberOfMinDurationsInMeasure =
-      (meter.meterCount * ConstantValue.minDuration) / meter.meterUnit;
+    this.disableFormControls();
 
-    this._mei.createScoreOnInit(this.numberOfMinDurationsInMeasure);
+    this._mei.numberOfMinDurationsInMeasure = this.numberOfMinDurationsInMeasure;
+    let meter = this.meterList[0];
     this.baseScore = this._mei.createBaseScore(meter);
 
     // run at 16-note intervals
@@ -192,7 +242,7 @@ export class AppComponent implements OnInit, OnDestroy {
         this.noteCounterInMeasure += 1;
         beforeNoteElement = this.latestNoteElement.current ? this.latestNoteElement.current : this.latestNoteElement.before;
       }
-    }, ((60 * 1000) / +this.form.get("tempo").value / ConstantValue.minDuration) * ConstantValue.baseDurationForTempo);
+    }, ((60 * 1000) / +this.tempo / ConstantValue.minDuration) * ConstantValue.baseDurationForTempo);
   }
 
   detectPitch(): Note {
@@ -245,11 +295,19 @@ export class AppComponent implements OnInit, OnDestroy {
     scoreContainer.scrollLeft = this.widthOfScore;
   }
 
-  stop() {
+  stopGeneratingScore() {
     this.generatingScore = false;
     clearInterval(this.repeatScoreRendering);
+    this.enableFormControls();
   }
 
+  startPlayback(){
+
+  }
+
+  stopPlayback(){
+    
+  }
   ngOnDestroy() {
     this._audio.context.close();
   }
